@@ -27,12 +27,26 @@ def get_tickers(url):
     return ticker_collection
 
 
-def scrape_data(url, mda):
+def scrape_data(url):
     session = HTMLSession().get(url)
     page = BeautifulSoup(session.text, features='lxml')
-
     data = page.find_all("tr", class_="BdT Bdc($seperatorColor) Ta(end) Fz(s) Whs(nw)")
-    print(data)
+
+    all_close = []
+    for i in data:
+
+        entries = i.find_all("td")
+        try:
+            all_close.append(entries[3].text)
+        except:
+            pass
+
+
+
+def get_MDA(entries, days):
+    pass
+
+
 
 
 if __name__ == '__main__':
@@ -43,9 +57,8 @@ if __name__ == '__main__':
     print(ticker_collection)
     for i in ticker_collection:
         yahoo_url = f"https://finance.yahoo.com/quote/{i}/history?"
-        print(yahoo_url)
-
-        scrape_data(yahoo_url, 4)
+        close_entries = scrape_data(yahoo_url)
+        get_MDA(50)
 """
 get yahoo ticker
 then collect the data (depending on how many days there are)
