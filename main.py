@@ -2,12 +2,12 @@
 
 This project looks at the various MDA and the appropriate reactions to those MDAs.
 
-The 200 MDA will provide a buy/sell signal on a particular stock.
+The 50 MDA will provide a buy/sell signal on a particular stock.
 
 """
 from requests_html import HTMLSession
 from bs4 import BeautifulSoup
-
+import numpy
 
 def get_tickers(url):
     ticker_collection = []
@@ -41,27 +41,43 @@ def scrape_data(url):
         except:
             pass
 
+    return all_close
 
 
 def get_MDA(entries, days):
-    pass
 
+    stock_entries = []
+    if len(entries) >= days:
+        for i in range(days, len(entries)):
+            stock = []
 
+            for j in range(i - days, i):
+                stock.append(float(entries[j]))
+
+            average = numpy.average(stock)
+            stock_entries.append(average)
+
+    return stock_entries
 
 
 if __name__ == '__main__':
 
     finviz_url = "https://www.finviz.com/screener.ashx?v=111&r="
     ticker_collection = get_tickers(finviz_url)
-
     print(ticker_collection)
     for i in ticker_collection:
         yahoo_url = f"https://finance.yahoo.com/quote/{i}/history?"
         close_entries = scrape_data(yahoo_url)
-        get_MDA(50)
+        close_entries = close_entries[::-1]
+        print(close_entries)
+        mda = get_MDA(close_entries, 50)
+
+
+        if len(mda) > 1:
+            latest_mda = mda[len(mda) - 1]
+            print(latest_mda)
+
 """
-get yahoo ticker
-then collect the data (depending on how many days there are)
 then create a MDA for that
 """
 
