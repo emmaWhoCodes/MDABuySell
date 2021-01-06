@@ -13,7 +13,7 @@ def get_tickers(url):
     ticker_collection = []
 
     #385
-    for i in range(1, 2):
+    for i in range(1, 10):
         if i != 1:
             url = f'https://www.finviz.com/screener.ashx?v=111&r={str(20 * i + 1)}'
 
@@ -44,17 +44,20 @@ def scrape_data(url):
     return all_close
 
 
-def get_MDA(entries, days):
+def get_MDA(price_entries, days):
 
     stock_entries = []
-    if len(entries) >= days:
-        for i in range(days, len(entries)):
-            stock = []
+    if len(price_entries) >= days:
+        for i in range(days, len(price_entries)):
+            prices = []
 
             for j in range(i - days, i):
-                stock.append(float(entries[j]))
 
-            average = numpy.average(stock)
+                #sometimes entries on yahoo are a - just as a known issue
+                if "-" not in price_entries[j] or price_entries[j] != "-":
+                    prices.append(float(price_entries[j]))
+
+            average = numpy.average(prices)
             stock_entries.append(average)
 
     return stock_entries
@@ -64,30 +67,37 @@ if __name__ == '__main__':
 
     finviz_url = "https://www.finviz.com/screener.ashx?v=111&r="
     ticker_collection = get_tickers(finviz_url)
+
     print(ticker_collection)
+
     for i in ticker_collection:
         yahoo_url = f"https://finance.yahoo.com/quote/{i}/history?"
         close_entries = scrape_data(yahoo_url)
         close_entries = close_entries[::-1]
-        print(close_entries)
+
+        #get 50 MDA
         mda = get_MDA(close_entries, 50)
 
+        #get latest mda
+        if len(mda) != 0 and len(close_entries) != 0:
+            latest_50mda = float(mda[len(mda) - 1])
+            latest_close = float(close_entries[len(close_entries) - 1])
+            print(latest_close)
+            print(latest_50mda)
 
-        if len(mda) > 1:
-            latest_mda = mda[len(mda) - 1]
-            print(latest_mda)
+
+    #    Stock price above the 50-day moving average is considered bullish.
+            if latest_close < latest_50mda:
+                print(f"bearish {i}")
+
+    #    If the price breaks the 50-day SMA downwards, you should switch your opinion to bearish.
+            if latest_close > latest_50mda:
+                print(f"bullish {i}")
 
 """
-then create a MDA for that
-"""
-
-
-"""
-    Stock price above the 50-day moving average is considered bullish.
     Stock price below 50-day moving average is considered bearish.
     If the price meets the 50 day SMA as support and bounces upwards, you should think long.
     Stock price meets the 50-day SMA as resistance and bounces downwards, you should think short.
-    If the price breaks the 50-day SMA downwards, you should switch your opinion to bearish.
     If the price breaks the 50-day SMA upward, you should switch your opinion to bullish.
 
 """
