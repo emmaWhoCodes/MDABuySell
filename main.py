@@ -13,7 +13,7 @@ def get_tickers(url):
     ticker_collection = []
 
     #385
-    for i in range(1, 10):
+    for i in range(1, 2):
         if i != 1:
             url = f'https://www.finviz.com/screener.ashx?v=111&r={str(20 * i + 1)}'
 
@@ -45,7 +45,6 @@ def scrape_data(url):
 
 
 def get_MDA(price_entries, days):
-
     stock_entries = []
     if len(price_entries) >= days:
         for i in range(days, len(price_entries)):
@@ -75,24 +74,21 @@ if __name__ == '__main__':
         close_entries = scrape_data(yahoo_url)
         close_entries = close_entries[::-1]
 
-        #get 50 MDA
-        mda = get_MDA(close_entries, 50)
+        _50mda = get_MDA(close_entries, 50)
 
-        #get latest mda
-        if len(mda) != 0 and len(close_entries) != 0:
-            latest_50mda = float(mda[len(mda) - 1])
+        if len(close_entries) != 0:
             latest_close = float(close_entries[len(close_entries) - 1])
-            print(latest_close)
-            print(latest_50mda)
 
+            if len(_50mda) != 0:
+                latest_50mda = float(_50mda[len(_50mda) - 1])
 
-    #    Stock price above the 50-day moving average is considered bullish.
-            if latest_close < latest_50mda:
-                print(f"bearish {i}")
+        #    Stock price above the 50-day moving average is considered bullish.
+                if latest_close < latest_50mda:
+                    print(f"latest close is lower than 50 mda {i}")
 
-    #    If the price breaks the 50-day SMA downwards, you should switch your opinion to bearish.
-            if latest_close > latest_50mda:
-                print(f"bullish {i}")
+        #    If the price breaks the 50-day SMA downwards, you should switch your opinion to bearish.
+                if latest_close > latest_50mda:
+                    print(f"latest close is greater than 50 mda  {i}")
 
 """
     Stock price below 50-day moving average is considered bearish.
@@ -101,3 +97,4 @@ if __name__ == '__main__':
     If the price breaks the 50-day SMA upward, you should switch your opinion to bullish.
 
 """
+
